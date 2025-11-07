@@ -1,70 +1,57 @@
-provider "aws" {
-  region = "us-east-2" # 👈 stays in one region
+variable "region" {
+  type    = string
+  default = "us-east-2"
 }
 
-# Minimal VPC for lab
-resource "aws_vpc" "vpc" {
-  cidr_block           = "10.0.0.0/16"
-  enable_dns_support   = true
-  enable_dns_hostnames = true
-
-  tags = {
-    Name = upper("lab06-vpc")
-   Environment = "var.environment"
-   Terraform = "true"
-  }
+variable "environment" {
+  type    = string
+  default = "dev"
 }
 
-# Single subnet (no each.value, no undefined var)
-resource "aws_subnet" "list_subnet" {
-  vpc_id            = aws_vpc.vpc.id
-  cidr_block        = "10.0.1.0/24" # 👈 just pick one CIDR
-  availability_zone = "us-east-2a"  # �� one AZ in your region
-
-  tags = {
-    Name = "efrem-lab06-subnet"
-  }
-}
-locals {
-  maximum = max(var.num_1, var.num_2, var.num_3)
-  minimum = min(var.num_1, var.num_2, var.num_3, 44, 20)
+variable "vpc_name" {
+  type    = string
+  default = "lab06-vpc"
 }
 
-
-
-resource "aws_security_group" "main" {
-  name   = "core-sg"
-  vpc_id = aws_vpc.vpc.id
-
-  dynamic "ingress" {
-    for_each = var.web_ingress
-
-    content {
-      description = ingress.value.description
-      from_port   = ingress.value.port
-      to_port     = ingress.value.port
-      protocol    = "tcp"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
-  }
+variable "vpc_cidr" {
+  type    = string
+  default = "10.0.0.0/16"
 }
 
-module "s3" {
-  source  = "app.terraform.io/example-org-be54ee/s3-bucket/aws"
-  version = "1.0.0"
-
-  bucket = "my-lab-bucket"
-  region      = "us-east-2"
+variable "subnet_cidr" {
+  type    = string
+  default = "10.0.1.0/24"
 }
 
-output "max_value" {
-  value = local.maximum
+variable "num_1" {
+  type    = number
+  default = 10
 }
 
-output "min_value" {
-  value = local.minimum
+variable "num_2" {
+  type    = number
+  default = 20
 }
 
-output "lab06" {
-  value = upper("labby06")
+variable "num_3" {
+  type    = number
+  default = 30
 }
+variable "web_ingress" {
+  description = "List of web ports to allow"
+  type = list(object({
+    port : number
+    description : string
+  }))
+  default = [
+    { port = 80, description = "HTTP" },
+    { port = 443, description = "HTTPS" }
+  ]
+}
+
+variable "bucket_name" {
+  description = "Globally-unique S3 bucket name for the module"
+  type        = string
+  default     = "efrem-lab06-bucket-CHANGE-ME"
+}
+

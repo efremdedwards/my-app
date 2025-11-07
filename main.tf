@@ -1,44 +1,38 @@
 provider "aws" {
-  region = "us-east-2" # 👈 stays in one region
+  region = var.region
 }
 
-# Minimal VPC for lab
 resource "aws_vpc" "vpc" {
-  cidr_block           = "10.0.0.0/16"
+  cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
-
   tags = {
-    Name = upper("lab06-vpc")
-   Environment = "var.environment"
-   Terraform = "true"
+    Name        = var.vpc_name
+    Environment = var.environment # no quotes around the var
+    Terraform   = "true"
   }
 }
 
-# Single subnet (no each.value, no undefined var)
 resource "aws_subnet" "list_subnet" {
-  vpc_id            = aws_vpc.vpc.id
-  cidr_block        = "10.0.1.0/24" # 👈 just pick one CIDR
-  availability_zone = "us-east-2a"  # �� one AZ in your region
-
-  tags = {
-    Name = "efrem-lab06-subnet"
-  }
+  vpc_id                  = aws_vpc.vpc.id
+  cidr_block              = var.subnet_cidr
+  availability_zone       = "${var.region}a"
+  map_public_ip_on_launch = true
+  tags                    = { Name = "${var.vpc_name}-subnet" }
 }
+
 locals {
   maximum = max(var.num_1, var.num_2, var.num_3)
   minimum = min(var.num_1, var.num_2, var.num_3, 44, 20)
 }
 
-
-
 resource "aws_security_group" "main" {
-  name   = "core-sg"
-  vpc_id = aws_vpc.vpc.id
+  name        = "${var.vpc_name}-sg"
+  description = "Example SG"
+  vpc_id      = aws_vpc.vpc.id
 
   dynamic "ingress" {
     for_each = var.web_ingress
-
     content {
       description = ingress.value.description
       from_port   = ingress.value.port
@@ -47,24 +41,25 @@ resource "aws_security_group" "main" {
       cidr_blocks = ["0.0.0.0/0"]
     }
   }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 module "s3" {
   source  = "app.terraform.io/example-org-be54ee/s3-bucket/aws"
   version = "1.0.0"
 
-  bucket = "my-lab-bucket"
-  region      = "us-east-2"
+  # adjust to your module’s expected inputs
+  bucket = var.bucket_name # must be globally unique
+  region = var.region
 }
 
-output "max_value" {
-  value = local.maximum
-}
+output "max_value" { value = local.maximum }
+output "min_value" { value = local.minimum }
+output "lab06" { value = upper("labby06") }
 
-output "min_value" {
-  value = local.minimum
-}
-
-output "lab06" {
-  value = upper("labby06")
-}
