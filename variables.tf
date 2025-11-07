@@ -1,6 +1,14 @@
+#my new variables file#
 variable "region" {
   type    = string
-  default = "us-east-2"
+  default = null
+}
+
+# Keep for old workspaces; safe to remove later
+variable "aws_region" {
+  type        = string
+  default     = null
+  description = "Legacy var name; prefer 'region'"
 }
 
 variable "environment" {
@@ -16,42 +24,5 @@ variable "vpc_name" {
 variable "vpc_cidr" {
   type    = string
   default = "10.0.0.0/16"
-}
-
-variable "subnet_cidr" {
-  type    = string
-  default = "10.0.1.0/24"
-}
-
-variable "num_1" {
-  type    = number
-  default = 10
-}
-
-variable "num_2" {
-  type    = number
-  default = 20
-}
-
-variable "num_3" {
-  type    = number
-  default = 30
-}
-variable "web_ingress" {
-  description = "List of web ports to allow"
-  type = list(object({
-    port : number
-    description : string
-  }))
-  default = [
-    { port = 80, description = "HTTP" },
-    { port = 443, description = "HTTPS" }
-  ]
-}
-
-variable "bucket_name" {
-  description = "Globally-unique S3 bucket name for the module"
-  type        = string
-  default     = "efrem-lab06-bucket-CHANGE-ME"
 }
 
