@@ -1,4 +1,4 @@
-#my new files#
+#my new files in development#
 
 locals {
   # Works with either `region` or old `aws_region`
@@ -14,12 +14,15 @@ resource "aws_vpc" "vpc" {
   enable_dns_support   = true
   enable_dns_hostnames = true
   tags = {
-    Name        = var.vpc_name
-    Environment = var.environment
+    Name = var.vpc_name
+    #Environment = var.environment
+    Environment = "dev"
+    Owner       = "efrem"
   }
 }
 
 output "vpc_id" {
   value = aws_vpc.vpc.id
 }
+
 
