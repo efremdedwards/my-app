@@ -13,12 +13,12 @@ variable "aws_region" {
 
 variable "environment" {
   type    = string
-  default = "dev"
+  default = "prod"
 }
 
 variable "vpc_name" {
   type    = string
-  default = "lab06-vpc"
+  default = "lab07-vpc"
 }
 
 variable "vpc_cidr" {
