@@ -1,4 +1,20 @@
-#my new files#
+#my new files in prod#
+terraform {
+  required_version = ">= 1.6.0"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.20.0"
+    }
+  }
+
+  backend "remote" {
+    hostname     = "app.terraform.io"
+    organization = "example-org-be54ee" # 👈 your org
+    # workspace name comes from -backend-config file
+  }
+}
 
 locals {
   # Works with either `region` or old `aws_region`
@@ -16,10 +32,6 @@ resource "aws_vpc" "vpc" {
   tags = {
     Name        = var.vpc_name
     Environment = var.environment
+    Owner       = "efrem2"
   }
 }
-
-output "vpc_id" {
-  value = aws_vpc.vpc.id
-}
-
